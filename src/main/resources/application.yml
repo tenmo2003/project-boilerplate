@@ -2,7 +2,7 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/
-      database: stayevrgoe
+      database: test
   output:
     ansi:
       enabled: ALWAYS
