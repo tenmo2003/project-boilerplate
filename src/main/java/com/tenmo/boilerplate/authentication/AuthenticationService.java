@@ -22,12 +22,12 @@ public class AuthenticationService {
     public String authenticate(CredentialsDTO credentialsDTO) {
         try {
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                    credentialsDTO.getEmail(),
+                    credentialsDTO.getUsername(),
                     credentialsDTO.getPassword()
             );
             authenticationManager.authenticate(token);
 
-            return jwtService.generateToken(credentialsDTO.getEmail());
+            return jwtService.generateToken(credentialsDTO.getUsername());
         } catch (Exception e) {
             throw new BusinessException(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
@@ -35,7 +35,7 @@ public class AuthenticationService {
 
     public void signup(SignUpDTO dto) {
         User user = new User();
-        user.setEmail(dto.getEmail());
+        user.setUsername(dto.getUsername());
         user.setPassword(bCryptPasswordEncoder.encode(dto.getPassword()));
         user.setRole(User.Role.USER);
         userDAO.save(user);
