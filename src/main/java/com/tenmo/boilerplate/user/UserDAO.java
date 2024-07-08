@@ -1,40 +1,29 @@
 package com.tenmo.boilerplate.user;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.tenmo.boilerplate.shared.exceptions.BusinessException;
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.ExecutionException;
 
 @Component
 @RequiredArgsConstructor
 public class UserDAO {
     private final MongoTemplate mongoTemplate;
-    LoadingCache<String, User> userCache = CacheBuilder.newBuilder()
+    private final LoadingCache<String, User> userCache = Caffeine.newBuilder()
             .build(new CacheLoader<String, User>() {
                 @Override
-                public User load(String email) throws Exception {
-                    User user = mongoTemplate.findOne(Query.query(Criteria.where("email").is(email)), User.class);
-                    if (user == null) {
-                        throw new BusinessException(HttpStatus.NOT_FOUND, "User not found");
-                    }
-                    return user;
+                public @Nullable User load(String s) throws Exception {
+                    return mongoTemplate.findOne(Query.query(Criteria.where("username").is(s)), User.class);
                 }
             });
 
     public User findByEmail(String email) {
-        try {
-            return userCache.get(email);
-        } catch (ExecutionException e) {
-            throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "ERROR");
-        }
+        return userCache.get(email);
     }
 
     public User save(User user) {
